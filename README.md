@@ -20,6 +20,10 @@ AsciiGL can currently draw 5 graphics primitives. These are:
 
 You can even specify the stroke fill characters!
 
+It can also handle basic keyboard input!
+
+PLEASE NOTE: At the moment, AsciiGL does run poorly on slower devices, optimizations will come soon!
+
 # Documentation
 
 ***
@@ -69,3 +73,9 @@ AsciiGLContext.primitives.rect(x, y, w, h) ---- Draws a rectangle at (x, y) with
 AsciiGLContext.primitives.circle(x, y, r) --- Draws a circle at (x, y) with a radius of w. Outline is stroke character, and is filled with fill character.
 
 AsciiGLContext.primitives.text(x, y, string) --- Draws string at (x, y)
+
+AsciiGLContext.input.getKey(code) --- Checks if key (KeyboardEvent Code) is down.
+
+AsciiGLContext.input.onkeydown() --- Called on keydown. Meant to be redefined by user.
+
+AsciiGLContext.input.onkeyup() --- Called on keyup. Meant to be redefined by user.

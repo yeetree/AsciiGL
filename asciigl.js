@@ -8,14 +8,12 @@ class AsciiGLContext {
     height = 0; //Height (changing this doesn't change textarea size, but will mess up math.)
 
     primitives = null; //Reference to primitives class
+    input = null; //Reference to input class
 
     //divid - where to place the AsciiGL TextArea
     //w - how wide to make the TextArea (characters)
     //h - how tall to make the TextArea (characters)
     constructor(divid, w, h) {
-
-        this.primitives = new AsciiGLPrimitives(this); //Creates new primitives class
-
         //Creates AsciiGL TextArea
 
         let aglh = document.getElementById(divid);
@@ -33,6 +31,9 @@ class AsciiGLContext {
 
         //Creates text buffer
         this.buffer = new Array(w*h).fill(0);
+
+        this.primitives = new AsciiGLPrimitives(this); //Creates new primitives class
+        this.input = new AsciiGLInput(this); //Creates new input class
 
         //Adds new element to the div
         aglh.appendChild(this.ctx);
@@ -228,3 +229,49 @@ ascii = [
     'p', 'q', 'r', 's', 't', 'u', 'v', 'w',
     'x', 'y', 'z', '{', '|', '}', '~', ''
 ];
+
+//AsciiGL Input
+
+//AsciiGL Input KeyCodes
+class AsciiGLInput {
+    agl = null; //Reference to AsciiGLContext
+    _keys = []; //Contains all keys that are pressed
+
+    //Adds event listener to AsciiGL Context
+    constructor(ctx) {
+        this.agl = ctx
+        this.agl.ctx.addEventListener("keydown", e => this._setKey(e, this));
+        this.agl.ctx.addEventListener("keyup", e => this._unSetKey(e, this));
+    }
+
+    //Sets key array variable if key is down
+    _setKey = function(e, th) {
+        if(!th._keys.includes(e.code)) {
+            th._keys.push(e.code);
+            th.onkeydown();
+        }
+    }
+
+    //Sets key array variable if key is up
+    _unSetKey = function(e, th) {
+        if(th._keys.includes(e.code)) {
+            th._keys = th._keys.filter((kc) => { return kc != e.code})
+            th.onkeyup();
+        }
+    }
+
+    //Checks if key is down (using JS Keyboard Event Code)
+    getKey = function(keycode) {
+        return this._keys.includes(keycode);
+    }
+
+    //Called on keydown, meant to be re-definable by user.
+    onkeydown = function() {
+
+    }
+
+    //Called on keyup, meant to be re-definable by user.
+    onkeyup = function() {
+
+    }
+}
