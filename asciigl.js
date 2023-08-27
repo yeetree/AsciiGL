@@ -23,7 +23,7 @@ class AsciiGLContext {
         this.ctx.setAttribute("rows", h + 1);
         this.ctx.setAttribute("cols", w);
         this.ctx.setAttribute("readonly", "true");
-        this.ctx.setAttribute("style", "font-family:monospace; resize: none; font-size: 10px;");
+        this.ctx.setAttribute("style", "font-family:monospace; resize: none; font-size: 10px; line-height: 11px;");
 
         //Sets some variables
         this.width = w;

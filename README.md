@@ -22,8 +22,6 @@ You can even specify the stroke fill characters!
 
 It can also handle basic keyboard input!
 
-PLEASE NOTE: At the moment, AsciiGL does run poorly on slower devices, optimizations will come soon!
-
 # Documentation
 
 ***
