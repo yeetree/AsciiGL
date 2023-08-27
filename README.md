@@ -58,6 +58,16 @@ AsciiGLContext.primitives.stroke --- The Ascii Character to use when stroking (u
 
 AsciiGLContext.primitives.fill --- The Ascii Character to use when filling (use ascii number, not text)
 
+### Sprites
+
+AsciiGLSprite --- An AsciiGL Sprite Object.
+
+AsciiGLSprite.loadurl(url) --- Loads sprite (text file) from url. !! IS ASYNC FUNCTION -- WAIT TO COMPLETE BEFORE DRAWING !!
+
+AsciiGLSprite.loadb64(b64) --- Loads sprite from decoded b64.
+
+AsciiGLSprie.loadstr(str) --- Loads sprite from raw text.
+
 ### Drawing
 
 AsciiGLContext.update() --- refreshes textarea&#x20;
@@ -66,11 +76,13 @@ AsciiGLContext.primitives.point(x, y) --- Draws the stroke character at (x, y)
 
 AsciiGLContext.primitives.line(x, y, ex, ey) --- Draws a line from (x, y) to (ex, ey) with stroke character
 
-AsciiGLContext.primitives.rect(x, y, w, h) ---- Draws a rectangle at (x, y) with width w and height h. Outline is stroke character, and is filled with fill character.
+AsciiGLContext.primitives.rect(x, y, w, h) --- Draws a rectangle at (x, y) with width w and height h. Outline is stroke character, and is filled with fill character.
 
 AsciiGLContext.primitives.circle(x, y, r) --- Draws a circle at (x, y) with a radius of w. Outline is stroke character, and is filled with fill character.
 
 AsciiGLContext.primitives.text(x, y, string) --- Draws string at (x, y)
+
+AsciiGLContext.primitives.sprite(x, y, spr) --- Draws spr at (x, y) !! spr NEEDS TO BE AsciiGLSprite OBJECT !!
 
 AsciiGLContext.input.getKey(code) --- Checks if key (KeyboardEvent Code) is down.
 

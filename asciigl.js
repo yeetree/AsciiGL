@@ -7,8 +7,9 @@ class AsciiGLContext {
     width = 0; //Width (changing this doesn't change textarea size, but will mess up math.)
     height = 0; //Height (changing this doesn't change textarea size, but will mess up math.)
 
-    primitives = null; //Reference to primitives class
+    draw = null; //Reference to primitives class
     input = null; //Reference to input class
+    sound = null; //Reference to sound class
 
     //divid - where to place the AsciiGL TextArea
     //w - how wide to make the TextArea (characters)
@@ -70,8 +71,44 @@ class AsciiGLContext {
     }
 }
 
+//AsciiGL Sprite Class
+class AsciiGLSprite {
+    data = [[]];
+    
+    loadurl = async function(url) {
+        let res = await fetch(url);
+        let txt = await res.text();
+        this.loadstr(txt);
+    }
 
-//AsciiGL Primitaves Class
+    loadb64 = function(b64) {
+        let pstr = atob(b64);
+        this.loadstr(pstr);
+    }
+
+    loadstr = function(str) {
+        let pstr = "";
+        for(let i=0; i<str.length; i+=1) {
+            if(str[i] == "\n") { pstr+=";"}
+            else if(ascii.indexOf(str[i]) != -1) { pstr+=ascii.indexOf(str[i])+","}
+            else { pstr+="0,"}
+        }
+
+        let lines = pstr.split(';');
+        lines = lines.filter(l => { return l != '' })
+
+        let d = [];
+        for(let i=0; i<lines.length; i++) {
+            let l = lines[i].split(',').filter(l => { return l != '' }).map(Number);
+            d.push(l);
+        }
+
+
+        this.data = d;
+    }
+}
+
+//AsciiGL Primitives Class
 class AsciiGLPrimitives {
     //Some variables
     agl = null; //Reference to the AsciiGL Context
@@ -209,6 +246,17 @@ class AsciiGLPrimitives {
         }
         this.agl.autoupdate();
     }
+
+    sprite = function(x, y, spr) {
+        let data = spr.data;
+        for(let i=0; i<data.length; i++) {
+            for(let e=0; e<data[i].length; e++) {
+                this._point(x+e, y, data[i][e]);
+            }
+            y+=1;
+        }
+        this.agl.autoupdate();
+    }
 }
 
 //ASCII table.
@@ -232,8 +280,6 @@ ascii = [
 ];
 
 //AsciiGL Input
-
-//AsciiGL Input KeyCodes
 class AsciiGLInput {
     agl = null; //Reference to AsciiGLContext
     _keys = []; //Contains all keys that are pressed

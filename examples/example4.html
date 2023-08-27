@@ -1,0 +1,36 @@
+<html>
+    <head>
+        <title>AsciiGL Demo</title>
+        <script src="../asciigl.js"></script>
+    </head>
+    <body>
+        <div id="render"></div>
+        <script>
+            let agl = new AsciiGLContext("render", 130, 25);
+            agl.doautoupdate = false;
+
+            //Warning if you are running locally.
+            agl.primitives.text(0, 0, "If you are seeing this, it is because you are trying to run")
+            agl.primitives.text(0, 1, "this example locally. This example can't be run locally")
+            agl.primitives.text(0, 2, "because it needs access to a file, and that would violate COORS.")
+            agl.primitives.text(0, 3, "Try to run this by serving it or by going to the AsciiGL site.")
+            agl.update();
+
+            //When loading a sprite from a URL, you have to load it in an async
+            //function, or else it won't load in time.
+            async function example() {
+
+                agl.clear();
+                let asciigl = new AsciiGLSprite();
+                await asciigl.loadurl("./asciigl.txt");
+
+                agl.primitives.sprite(2, 0, asciigl);
+
+                agl.update();
+            }
+
+            //Remember to call it
+            example();
+        </script>
+    </body>
+</html>

@@ -1,0 +1,25 @@
+                                                                                                                                
+                                                                                                                                
+               AAA                                                    iiii    iiii         GGGGGGGGGGGGGLLLLLLLLLLL             
+              A:::A                                                  i::::i  i::::i     GGG::::::::::::GL:::::::::L             
+             A:::::A                                                  iiii    iiii    GG:::::::::::::::GL:::::::::L             
+            A:::::::A                                                                G:::::GGGGGGGG::::GLL:::::::LL             
+           A:::::::::A             ssssssssss       cccccccccccccccciiiiiii iiiiiii G:::::G       GGGGGG  L:::::L               
+          A:::::A:::::A          ss::::::::::s    cc:::::::::::::::ci:::::i i:::::iG:::::G                L:::::L               
+         A:::::A A:::::A       ss:::::::::::::s  c:::::::::::::::::c i::::i  i::::iG:::::G                L:::::L               
+        A:::::A   A:::::A      s::::::ssss:::::sc:::::::cccccc:::::c i::::i  i::::iG:::::G    GGGGGGGGGG  L:::::L               
+       A:::::A     A:::::A      s:::::s  ssssss c::::::c     ccccccc i::::i  i::::iG:::::G    G::::::::G  L:::::L               
+      A:::::AAAAAAAAA:::::A       s::::::s      c:::::c              i::::i  i::::iG:::::G    GGGGG::::G  L:::::L               
+     A:::::::::::::::::::::A         s::::::s   c:::::c              i::::i  i::::iG:::::G        G::::G  L:::::L               
+    A:::::AAAAAAAAAAAAA:::::A  ssssss   s:::::s c::::::c     ccccccc i::::i  i::::i G:::::G       G::::G  L:::::L         LLLLLL
+   A:::::A             A:::::A s:::::ssss::::::sc:::::::cccccc:::::ci::::::ii::::::i G:::::GGGGGGGG::::GLL:::::::LLLLLLLLL:::::L
+  A:::::A               A:::::As::::::::::::::s  c:::::::::::::::::ci::::::ii::::::i  GG:::::::::::::::GL::::::::::::::::::::::L
+ A:::::A                 A:::::As:::::::::::ss    cc:::::::::::::::ci::::::ii::::::i    GGG::::::GGG:::GL::::::::::::::::::::::L
+AAAAAAA                   AAAAAAAsssssssssss        cccccccccccccccciiiiiiiiiiiiiiii       GGGGGG   GGGGLLLLLLLLLLLLLLLLLLLLLLLL
+                                                                                                                                
+                                                                                                                                
+                                                                                                                                
+                                                                                                                                
+                                                                                                                                
+                                                                                                                                
+This was loaded from a text file!!                                                                                                                                
