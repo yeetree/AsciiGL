@@ -7,7 +7,7 @@ class AsciiGLContext {
     width = 0; //Width (changing this doesn't change textarea size, but will mess up math.)
     height = 0; //Height (changing this doesn't change textarea size, but will mess up math.)
 
-    draw = null; //Reference to primitives class
+    primitives = null; //Reference to primitives class
     input = null; //Reference to input class
     sound = null; //Reference to sound class
 

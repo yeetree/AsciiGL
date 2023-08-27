@@ -1,0 +1,75 @@
+<html>
+    <head>
+        <title>AsciiGL Demo</title>
+        <script src="../asciigl.js"></script>
+    </head>
+    <body>
+        <div id="render"></div>
+        <p>Player 1: W/S To Move Paddle</p>
+        <p>Player 1: Up Arrow/Down Arrow To Move Paddle</p>
+        <script>
+            let agl = new AsciiGLContext("render", 70, 45);
+            agl.doautoupdate = false;
+
+            p1y = 18;
+            p2y = 18;
+            p1s = 0;
+            p2s = 0;
+
+            bx=35;
+            by=22;
+            bdx=1;
+            bdy=1;
+
+
+            const sleep = time => new Promise(res => setTimeout(res, time, "done sleeping"));
+
+            async function gameloop() {
+
+                bx+=bdx;
+                by+=bdy;
+                let nbdy = Math.ceil((Math.random() - 0.5) * 2) < 1 ? -1 : 1;
+                if(bx == 0) { bx = 35; by = 22; bdx = 1; bdy = nbdy; p2s += 1;}
+                else if(bx == 70) { bx = 35; by = 22; bdx = -1; bdy = nbdy; p1s += 1;}
+
+                if(by == 0) { bdy = 1; }
+                else if (by == 44) { bdy = -1; }
+
+                if(bx == 2 && by >= p1y && by <= p1y+10) { bdx = 1; bdy = bdy; }
+                else if(bx == 68 && by >= p2y && by <= p2y+10) { bdx = -1; bdy = bdy; }
+
+                if(agl.input.getKey("KeyW") && p1y != 0) { p1y -=1; }
+                else if(agl.input.getKey("KeyS") && p1y != 34) { p1y +=1; }
+
+                if(agl.input.getKey("ArrowUp") && p2y != 0) { p2y -=1; }
+                else if(agl.input.getKey("ArrowDown") && p2y != 34) { p2y +=1; }
+
+                agl.clear();
+                
+                agl.primitives.stroke = 88;
+
+                agl.primitives.line(1,p1y,1,p1y+10);
+
+                agl.primitives.line(69,p2y,69,p2y+10);
+
+                agl.primitives.stroke = 58;
+
+                agl.primitives.line(35,0,35,45)
+
+                agl.primitives.stroke = 79;
+
+                agl.primitives.point(bx, by);
+
+                agl.primitives.text(1, 1, "Score: " + p1s.toString() + " - " + p2s.toString())
+                
+                agl.update();
+
+                await sleep(50);
+                gameloop();
+            }
+
+            //Remember to call it
+            gameloop();
+        </script>
+    </body>
+</html>
