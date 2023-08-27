@@ -1,0 +1,43 @@
+<html>
+    <head>
+        <title>AsciiGL Demo</title>
+        <script src="asciigl.js"></script>
+    </head>
+    <body>
+        <div id="render"></div>
+        <script>
+            let agl = new AsciiGLContext("render", 70, 45);
+            agl.doautoupdate = false;
+
+            agl.primitives.rect(1, 1, 68, 43)
+            agl.primitives.text(3, 3, "Welcome to AsciiGL!")
+            agl.primitives.text(3, 4, "AsciiGL is a simple, text-based Graphics Library written")
+            agl.primitives.text(3, 5, "in JavaScript.")
+
+
+            agl.primitives.text(3, 7, "AsciiGL can be used to do all kinds of things;")
+            agl.primitives.text(3, 8, "it can draw points, lines, rectangles, text, and circles!")
+
+            agl.primitives.stroke = 48
+            agl.primitives.fill = 0
+
+            agl.primitives.text(3, 10, "Point:")
+            agl.primitives.point(11, 10);
+
+            agl.primitives.text(3, 12, "Line:")
+
+            agl.primitives.line(10, 12, 30, 12);
+
+            agl.primitives.text(3, 14, "Rectangle:")
+            agl.primitives.rect(15, 14, 20, 5);
+
+            agl.primitives.text(3, 21, "Circle:")
+            agl.primitives.circle(11, 21, 5)
+
+            agl.primitives.text(3, 33, "That's all for now, but there will be more in the future!")
+            agl.primitives.text(3, 34, "(Maybe even 3D!!)")
+
+            agl.update();
+        </script>
+    </body>
+</html>
