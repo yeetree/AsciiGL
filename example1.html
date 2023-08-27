@@ -6,9 +6,8 @@
     <body>
         <div id="render"></div>
         <p>Use arrow keys to navigate.</p>
-        <p>Render size is small due to performance.</p>
         <script>
-            let agl = new AsciiGLContext("render", 10, 10);
+            let agl = new AsciiGLContext("render", 50, 35);
             agl.doautoupdate = false;
 
             let x = 0;
@@ -18,7 +17,7 @@
 
             const sleep = time => new Promise(res => setTimeout(res, time, "done sleeping"));
 
-            agl.primitives.point(x, y);
+            agl.primitives.circle(x, y, 10);
             agl.update();
 
             const moveloop = async function() {
@@ -39,7 +38,7 @@
                     }
 
                     agl.clear();
-                    agl.primitives.point(x, y);
+                    agl.primitives.circle(x, y, 10);
                     agl.update();   
                 }
                 

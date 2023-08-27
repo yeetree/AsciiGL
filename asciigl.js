@@ -23,7 +23,7 @@ class AsciiGLContext {
         this.ctx.setAttribute("rows", h + 1);
         this.ctx.setAttribute("cols", w);
         this.ctx.setAttribute("readonly", "true");
-        this.ctx.setAttribute("style", "font-family:monospace; resize: none; font-size: 10px; /*letter-spacing: 3px;*/");
+        this.ctx.setAttribute("style", "font-family:monospace; resize: none; font-size: 10px;");
 
         //Sets some variables
         this.width = w;
@@ -51,15 +51,16 @@ class AsciiGLContext {
     //Simple update function that outputs contents of the text buffer
     //to the AsciiGL TextArea
     update = function() {
-        this.ctx.innerHTML = "";
+        let buf = "";
         let index = 0;
         for(let i = 0; i<this.height; i++) {
             for(let e = 0; e<this.width; e++) {
-                this.ctx.innerHTML += ascii[this.buffer[index]];
+                buf += ascii[this.buffer[index]];
                 index+=1;
             }
-            this.ctx.innerHTML+="\n";
+            buf+="\n";
         }
+        this.ctx.innerHTML = buf;
     }
 
     //Clears text buffer
@@ -227,7 +228,7 @@ ascii = [
     '`', 'a', 'b', 'c', 'd', 'e', 'f', 'g',
     'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
     'p', 'q', 'r', 's', 't', 'u', 'v', 'w',
-    'x', 'y', 'z', '{', '|', '}', '~', ''
+    'x', 'y', 'z', '{', '|', '}', '~', ' '
 ];
 
 //AsciiGL Input

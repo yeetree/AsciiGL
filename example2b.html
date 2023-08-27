@@ -1,0 +1,51 @@
+<html>
+    <head>
+        <title>AsciiGL Demo</title>
+        <script src="asciigl.js"></script>
+    </head>
+    <body>
+        <div id="render"></div>
+        <script>
+            let agl = new AsciiGLContext("render", 70, 45);
+            agl.doautoupdate = false;
+
+            let x = 0;
+            let y = 0;
+            let dx = 1;
+            let dy = 1;
+
+            const sleep = time => new Promise(res => setTimeout(res, time, "done sleeping"));
+
+            const moveloop = async function() {
+                
+                x+=dx;
+                y+=dy;
+
+                agl.clear();
+                agl.primitives.rect(x, y, 14, 7)
+                agl.primitives.text(x+4, y+3, "AsciiGL")
+                agl.update();
+
+                if(x == 0) {
+                    dx = 1
+                }
+                else if(x == agl.width-15) {
+                    dx = -1
+                }
+
+                if(y == 0) {
+                    dy = 1
+                }
+                else if(y == agl.height-8) {
+                    dy = -1
+                }
+
+
+                await sleep(20);
+                moveloop();
+            }
+
+            moveloop();
+        </script>
+    </body>
+</html>
