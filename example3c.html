@@ -1,0 +1,189 @@
+<html>
+    <head>
+        <title>AsciiGL Demo</title>
+        <script src="asciigl.js"></script>
+    </head>
+    <body>
+        <div id="render"></div>
+        <p>Use arrow keys to navigate.</p>
+        <p><a href="./example3.html">Low Quality</a></p>
+        <p><a href="./example3b.html">Medium Quality</a></p>
+        <p><a href="./example3c.html">High Quality</a></p>
+        <script>
+            let agl = new AsciiGLContext("render", 300, 200);
+            agl.doautoupdate = false;
+
+            let posX = 22, posY = 12;  //x and y start position
+            let dirX = -1, dirY = 0; //initial direction vector
+            let planeX = 0, planeY = 0.66; //the 2d raycaster version of camera plane
+
+            let time = 0; //time of current frame
+            let oldTime = 0; //time of previous frame
+            let inp = false;
+
+            let worldMap = [
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+                [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+                [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+                [1,0,0,0,0,0,2,2,2,2,2,0,0,0,0,3,0,3,0,3,0,0,0,1],
+                [1,0,0,0,0,0,2,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,1],
+                [1,0,0,0,0,0,2,0,0,0,2,0,0,0,0,3,0,0,0,3,0,0,0,1],
+                [1,0,0,0,0,0,2,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,1],
+                [1,0,0,0,0,0,2,2,0,2,2,0,0,0,0,3,0,3,0,3,0,0,0,1],
+                [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+                [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+                [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+                [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+                [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+                [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+                [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+                [1,4,4,4,4,4,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+                [1,4,0,4,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+                [1,4,0,0,0,0,5,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+                [1,4,0,4,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+                [1,4,0,4,4,4,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+                [1,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+                [1,4,4,4,4,4,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+            ];
+
+            agl.input.onkeydown = () => {inp = true}
+
+            const sleep = time => new Promise(res => setTimeout(res, time, "done sleeping"));
+
+            const moveloop = async function() {
+                agl.clear();
+                for(let x = 0; x < agl.width; x++)
+                {
+                    //calculate ray position and direction
+                    let cameraX = 2 * x / parseFloat(agl.width) - 1; //x-coordinate in camera space
+                    let rayDirX = dirX + planeX * cameraX;
+                    let rayDirY = dirY + planeY * cameraX;
+
+
+                    //which box of the map we're in
+                    let mapX = parseInt(posX);
+                    let mapY = parseInt(posY);
+
+                    //length of ray from current position to next x or y-side
+                    let sideDistX;
+                    let sideDistY;
+
+                    //length of ray from one x or y-side to next x or y-side
+                    let deltaDistX = (rayDirX == 0) ? 1e30 : Math.abs(1 / rayDirX);
+                    let deltaDistY = (rayDirY == 0) ? 1e30 : Math.abs(1 / rayDirY);
+                    let perpWallDist;
+
+                    //what direction to step in x or y-direction (either +1 or -1)
+                    let stepX;
+                    let stepY;
+
+                    let hit = 0; //was there a wall hit?
+                    let side; //was a NS or a EW wall hit?
+
+                    //calculate step and initial sideDist
+                    if (rayDirX < 0)
+                    {
+                        stepX = -1;
+                        sideDistX = (posX - mapX) * deltaDistX;
+                    }
+                    else
+                    {
+                        stepX = 1;
+                        sideDistX = (mapX + 1.0 - posX) * deltaDistX;
+                    }
+                    if (rayDirY < 0)
+                    {
+                        stepY = -1;
+                        sideDistY = (posY - mapY) * deltaDistY;
+                    }
+                    else
+                    {
+                        stepY = 1;
+                        sideDistY = (mapY + 1.0 - posY) * deltaDistY;
+                    }
+
+                    //perform DDA
+                    while (hit == 0)
+                    {
+                        //jump to next map square, either in x-direction, or in y-direction
+                        if (sideDistX < sideDistY)
+                        {
+                            sideDistX += deltaDistX;
+                            mapX += stepX;
+                            side = 0;
+                        }
+                        else
+                        {
+                            sideDistY += deltaDistY;
+                            mapY += stepY;
+                            side = 1;
+                        }
+                        //Check if ray has hit a wall
+                        if (worldMap[mapX][mapY] > 0) hit = 1;
+                    } 
+                            
+                    //Calculate distance projected on camera direction (Euclidean distance would give fisheye effect!)
+                    if(side == 0) perpWallDist = (sideDistX - deltaDistX);
+                    else          perpWallDist = (sideDistY - deltaDistY);
+
+                    //Calculate height of line to draw on screen
+                    let lineHeight = parseInt((agl.height / perpWallDist));
+
+                    //calculate lowest and highest pixel to fill in current stripe
+                    let drawStart = -lineHeight / 2 + agl.height / 2;
+                    if(drawStart < 0)drawStart = 0;
+                    let drawEnd = lineHeight / 2 + agl.height / 2;
+                    if(drawEnd >= agl.height)drawEnd = agl.height - 1;
+
+                    let color = 64;
+                    if(side == 1) {
+                        color = 35
+                    }
+
+                    agl.primitives.stroke = color;
+                    agl.primitives.line(x, drawStart, x, drawEnd);
+                }
+                agl.update();
+
+                
+                let moveSpeed = 0.5; //the constant value is in squares/second
+                let rotSpeed = 0.1; //the constant value is in radians/second
+
+                if(agl.input.getKey("ArrowRight")) {
+                    let oldDirX = dirX;
+                    dirX = dirX * Math.cos(-rotSpeed) - dirY * Math.sin(-rotSpeed);
+                    dirY = oldDirX * Math.sin(-rotSpeed) + dirY * Math.cos(-rotSpeed);
+                    let oldPlaneX = planeX;
+                    planeX = planeX * Math.cos(-rotSpeed) - planeY * Math.sin(-rotSpeed);
+                    planeY = oldPlaneX * Math.sin(-rotSpeed) + planeY * Math.cos(-rotSpeed);
+                }
+                else if (agl.input.getKey("ArrowLeft")) {
+                    //both camera direction and camera plane must be rotated
+                    let oldDirX = dirX;
+                    dirX = dirX * Math.cos(rotSpeed) - dirY * Math.sin(rotSpeed);
+                    dirY = oldDirX * Math.sin(rotSpeed) + dirY * Math.cos(rotSpeed);
+                    let oldPlaneX = planeX;
+                    planeX = planeX * Math.cos(rotSpeed) - planeY * Math.sin(rotSpeed);
+                    planeY = oldPlaneX * Math.sin(rotSpeed) + planeY * Math.cos(rotSpeed);
+                }
+                if(agl.input.getKey("ArrowUp")) {
+                    if(worldMap[parseInt(posX + dirX * moveSpeed)][parseInt(posY)] == false) posX += dirX * moveSpeed;
+                    if(worldMap[parseInt(posX)][parseInt(posY + dirY * moveSpeed)] == false) posY += dirY * moveSpeed;
+                }
+                else if (agl.input.getKey("ArrowDown")) {
+                    if(worldMap[parseInt(posX - dirX * moveSpeed)][parseInt(posY)] == false) posX -= dirX * moveSpeed;
+                    if(worldMap[parseInt(posX)][parseInt(posY - dirY * moveSpeed)] == false) posY -= dirY * moveSpeed;
+                }
+
+
+
+                await sleep(100);
+                moveloop();
+            }
+
+            moveloop();
+        </script>
+    </body>
+</html>
