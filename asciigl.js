@@ -41,6 +41,14 @@ class AsciiGLContext {
         this.update();
     }
 
+    setblack = function() {
+        this.ctx.setAttribute("style", "background-color: black; color: white; font-family:monospace; resize: none; font-size: 10px; line-height: 11px;");
+    }
+
+    setwhite = function() {
+        this.ctx.setAttribute("style", "font-family:monospace; resize: none; font-size: 10px; line-height: 11px;");
+    }
+
     //Simple function that is called by all drawing functions
     //to check whether or not to automatically draw
     autoupdate = function() {

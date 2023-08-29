@@ -19,6 +19,7 @@ class AsciiGL3D {
     constructor(ctx) {
         this.agl = ctx; //Sets AsciiGL Context
         this.agl.doautoupdate = false; //Disables Auto Update
+        this.agl.setblack();
         this.fAspectRatio = this.agl.height / this.agl.width; //Calculates Aspect Ratio
 
         this.fFovRad = Math.tan(this.fFov * 0.5 / 100.0 * 3.14159); //FOV in Radians
@@ -58,6 +59,9 @@ class AsciiGL3D {
     //Drawing Mesh Code
     drawmesh = function(mesh) {
         this.calcrmatrixes();
+
+        let tristorender = [];
+
         for(let i=0; i<mesh.tris.length; i++) {
             const tri = mesh.tris[i].clone();
 
@@ -79,9 +83,9 @@ class AsciiGL3D {
 
             let triTrans = triRotZX.clone(); //Clones triangle (Because JavaScript is stupid)
 
-            triTrans.p[0].z = triRotZX.p[0].z + 3; //Offsets Z by 3
-            triTrans.p[1].z = triRotZX.p[1].z + 3;
-            triTrans.p[2].z = triRotZX.p[2].z + 3;
+            triTrans.p[0].z = triRotZX.p[0].z + 10; //Offsets Z by 3
+            triTrans.p[1].z = triRotZX.p[1].z + 10;
+            triTrans.p[2].z = triRotZX.p[2].z + 10;
 
             //Calculate Normals
             let tt = triTrans.clone();
@@ -117,6 +121,8 @@ class AsciiGL3D {
                 
                 let col = this.valtoascii(dp);
 
+                //let col = this.valtoascii(Math.sin(this.rotval));
+
                 let triProj = new Triangle();
                 triProj.p[0] = this.multiplyMatrixVector(triTrans.p[0], triProj.p[0], this.pMatrix) //Multiplies triangle by perspective matrix
                 triProj.p[1] = this.multiplyMatrixVector(triTrans.p[1], triProj.p[1], this.pMatrix)
@@ -130,7 +136,22 @@ class AsciiGL3D {
                 triProj.p[1].x *= scale * this.agl.width; triProj.p[1].y *= scale * this.agl.height;
                 triProj.p[2].x *= scale * this.agl.width; triProj.p[2].y *= scale * this.agl.height;
 
-                this.drawtri(triProj, col,  col) //Draw
+                triProj.col = col;
+                tristorender.push(triProj);
+                //this.drawtri(triProj, col,  col) //Draw
+            }
+
+            tristorender = tristorender.sort((a, b) => {
+                let z1 = (a.p[0].z + a.p[1].z + a.p[2].z) / 3;
+                let z2 = (b.p[0].z + b.p[1].z + b.p[2].z) / 3;
+
+                if(z1 < z2) { return 1 }
+                return -1;
+            })
+            
+            for(let i = 0; i<tristorender.length; i++) {
+                let col = tristorender[i].col;
+                this.drawtri(tristorender[i], col,  col) //Draw
             }
         }
     }
@@ -139,19 +160,40 @@ class AsciiGL3D {
         val = parseInt(12*val);
         let col = 0;
         switch(val) {
+            case 11: col = 64; break;
+            case 10: col = 64; break;
+            case 9: col = 48; break;
+            case 8: col = 48; break;
+            case 7: col = 35; break;
+            case 6: col = 35; break;
+            case 5: col = 73; break;
+            case 4: col = 73; break;
+            case 3: col = 43; break;
+            case 2: col = 43; break;
+            case 1: col = 126; break;
+            case 0: col = 126; break;
+            default: col = 126; break;
+        }
+        return col;
+    }
+
+    invvaltoascii = function(val) {
+        val = parseInt(12*val);
+        let col = 0;
+        switch(val) {
             case 0: col = 64; break;
             case 1: col = 64; break;
-            case 2: col = 35; break;
-            case 3: col = 35; break;
-            case 4: col = 48; break;
-            case 5: col = 48; break;
+            case 2: col = 48; break;
+            case 3: col = 48; break;
+            case 4: col = 35; break;
+            case 5: col = 35; break;
             case 6: col = 73; break;
             case 7: col = 73; break;
             case 8: col = 43; break;
             case 9: col = 43; break;
             case 10: col = 126; break;
             case 11: col = 126; break;
-            default: col = 44; break;
+            default: col = 64; break;
         }
         return col;
     }
@@ -274,6 +316,45 @@ class Triangle {
 
 class Mesh {
     tris = [];
+
+    loadurl = async function(file) {
+        let res = await fetch(file);
+        let txt = await res.text();
+        await this.loadstr(txt);
+    }
+
+    loadstr = function(str) {
+        let lines = str.split('\n');
+        let verts = [];
+        for(let i = 0; i < lines.length; i++) {
+            if(lines[i][0] == "v") {
+                let v = new Vector3();
+                let line = lines[i].split(' ');
+                if(line.length > 3) {
+                    v.x = parseFloat(line[1]);
+                    v.y = parseFloat(line[2]);
+                    v.z = parseFloat(line[3]);
+                    verts.push(v);
+                }
+
+            }
+            else if(lines[i][0] == "f") {
+                let t = new Triangle();
+                let line = lines[i].split(' ');
+                if(line.length > 3) {
+                    t.p[0] = verts[parseInt(line[1]) - 1];
+                    t.p[1] = verts[parseInt(line[2]) - 1];
+                    t.p[2] = verts[parseInt(line[3]) - 1];
+                    this.tris.push(t);
+                }
+            }
+        }
+    }
+
+    loadb64 = function(b64) {
+        let pstr = atob(b64);
+        this.loadstr(pstr);
+    }
 }
 
 class Matrix4x4 {

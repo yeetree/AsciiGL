@@ -7,44 +7,23 @@
     <body>
         <div id="render"></div>
         <script>
-            let agl = new AsciiGLContext("render", 200, 125);
+            let agl = new AsciiGLContext("render", 120, 85);
             let agl3d = new AsciiGL3D(agl);
-
-            const cube = new Mesh();
-            const v010 = new Vector3(0, 1, 0); // 1 - 010
-            const v110 = new Vector3(1, 1, 0); // 2 - 110
-            const v011 = new Vector3(0, 1, 1); // 3 - 011
-            const v111 = new Vector3(1, 1, 1); // 4 - 111
-            const v000 = new Vector3(0, 0, 0); // 5 - 000
-            const v001 = new Vector3(0, 0, 1); // 6 - 001
-            const v101 = new Vector3(1, 0, 1); // 7 - 101
-            const v100 = new Vector3(1, 0, 0); // 8 - 100
-
-            cube.tris = [
-                //Front
-                new Triangle(v000, v010, v110),
-                new Triangle(v000, v110, v100),
-                //Right
-                new Triangle(v100, v110, v111),
-                new Triangle(v100, v111, v101),
-                //Back
-                new Triangle(v101, v111, v011),
-                new Triangle(v101, v011, v001),
-                //Left
-                new Triangle(v001, v011, v010),
-                new Triangle(v001, v010, v000),
-                //Top
-                new Triangle(v010, v011, v111),
-                new Triangle(v010, v111, v110),
-                //Bottom
-                new Triangle(v101, v001, v000),
-                new Triangle(v101, v000, v100)
-            ]
+            let inp = false;
+            agl.input.onkeydown = () => { inp = true; }
 
             const sleep = time => new Promise(res => setTimeout(res, time, "done sleeping"));
 
+            let cube = new Mesh();
+
+            async function load() {
+                await cube.loadurl('./cube.obj')
+                loop();
+            }
+
             async function loop() {
                 agl3d.clear();
+                await agl3d.l
                 await agl3d.drawmesh(cube);
                 agl3d.update();
                 agl3d.rotval += 0.07;
@@ -52,7 +31,7 @@
                 loop();
             }
 
-            loop();
+            load();
         </script>
     </body>
 </html>
