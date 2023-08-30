@@ -3,16 +3,18 @@ class AsciiGL3D {
     agl = null; //Reference to AsciiGL Context
 
     pMatrix = null; //Perspective Matrix
-    rotzMatrix = null; //Z Rotation Matrix
-    rotxMatrix = null; //X Rotation Matrix
-
+    
     rotval = 50; //Rotation Axis
 
     fNear = 0.1; //Near Field
     fFar = 1000.0; //Far Field
     fFov = 90.0; //FOV
     fAspectRatio = 0; //Aspect Ratio (calculated on creation)
-    fFovRad = 0; //FOV in Radians (calculated on creation)
+
+    rotzMatrix = null;
+    rotyMatrix= null;
+    rotxMatrix = null;
+
 
     camera = new Camera();
 
@@ -22,43 +24,24 @@ class AsciiGL3D {
         this.agl.setblack();
         this.fAspectRatio = this.agl.height / this.agl.width; //Calculates Aspect Ratio
 
-        this.fFovRad = Math.tan(this.fFov * 0.5 / 100.0 * 3.14159); //FOV in Radians
-
-        //Perspective Matrix
-        this.pMatrix = new Matrix4x4();
-        this.pMatrix.m[0][0] = this.fAspectRatio * this.fFovRad;
-        this.pMatrix.m[1][1] = this.fFovRad;
-        this.pMatrix.m[2][2] = this.fFar / (this.fFar - this.fNear);
-        this.pMatrix.m[3][2] = (-this.fFar * this.fNear) / (this.fFar - this.fNear);
-        this.pMatrix.m[3][3] = 0;
-        this.pMatrix.m[2][3] = 1;
-
-        this.calcrmatrixes();
-    }
-
-    calcrmatrixes = function() {
-            //Rotation Z Matrix
-            this.rotzMatrix = new Matrix4x4();
-            this.rotzMatrix.m[0][0] = Math.cos(this.rotval);
-            this.rotzMatrix.m[0][1] = Math.sin(this.rotval);
-            this.rotzMatrix.m[1][0] = -Math.sin(this.rotval)
-            this.rotzMatrix.m[1][1] = Math.cos(this.rotval);
-            this.rotzMatrix.m[2][2] = 1;
-            this.rotzMatrix.m[3][3] = 1;
-    
-            //Rotation X Matrix
-            this.rotxMatrix = new Matrix4x4();
-            this.rotxMatrix.m[0][0] = 1;
-            this.rotxMatrix.m[1][1] = Math.cos(this.rotval * 0.5);
-            this.rotxMatrix.m[1][2] = Math.sin(this.rotval * 0.5);
-            this.rotxMatrix.m[2][1] = -Math.sin(this.rotval * 0.5);
-            this.rotxMatrix.m[2][2] = Math.cos(this.rotval * 0.5);
-            this.rotxMatrix.m[3][3] = 1;
+        this.pMatrix = this.matrixMakeProjection(this.fFov, this.fAspectRatio, this.fNear, this.fFar);
     }
 
     //Drawing Mesh Code
     drawmesh = function(mesh) {
-        this.calcrmatrixes();
+
+        this.rotxMatrix = this.matrixMakeX(this.rotval)
+        this.rotyMatrix = this.matrixMakeY(this.rotval)
+        this.rotzMatrix = this.matrixMakeZ(this.rotval * 0.5)
+
+        let mattrans = new Matrix4x4();
+        mattrans = this.matrixMakeTranlation(0, 0, 5);
+
+        let matworld = new Matrix4x4();
+        matworld = this.matrixMakeIdentity();
+        matworld = this.matrixMultiplyMatrix(this.rotzMatrix, this.rotxMatrix);
+        //matworld = this.matrixMultiplyMatrix(matworld, this.rotyMatrix);
+        matworld = this.matrixMultiplyMatrix(matworld, mattrans);
 
         let tristorender = [];
 
@@ -69,68 +52,53 @@ class AsciiGL3D {
             let offy = 3.1;
             let scale = 0.15;
 
-            let triRotZ = tri.clone();  //Clones triangle (Because JavaScript is stupid)
+            let triTrans = new Triangle();
 
-            triRotZ.p[0] = this.multiplyMatrixVector(tri.p[0], triRotZ.p[0], this.rotzMatrix); //Multiply by Z Matrix
-            triRotZ.p[1] = this.multiplyMatrixVector(tri.p[1], triRotZ.p[1], this.rotzMatrix);
-            triRotZ.p[2] = this.multiplyMatrixVector(tri.p[2], triRotZ.p[2], this.rotzMatrix);
-
-            let triRotZX = triRotZ.clone(); //Clones triangle (Because JavaScript is stupid)
-
-            triRotZX.p[0] = this.multiplyMatrixVector(triRotZ.p[0], triRotZX.p[0], this.rotxMatrix); //Multiply by X Matrix
-            triRotZX.p[1] = this.multiplyMatrixVector(triRotZ.p[1], triRotZX.p[1], this.rotxMatrix);
-            triRotZX.p[2] = this.multiplyMatrixVector(triRotZ.p[2], triRotZX.p[2], this.rotxMatrix);
-
-            let triTrans = triRotZX.clone(); //Clones triangle (Because JavaScript is stupid)
-
-            triTrans.p[0].z = triRotZX.p[0].z + 10; //Offsets Z by 3
-            triTrans.p[1].z = triRotZX.p[1].z + 10;
-            triTrans.p[2].z = triRotZX.p[2].z + 10;
+            triTrans.p[0] = this.matrixMultiplyVec(matworld, tri.p[0]);
+            triTrans.p[1] = this.matrixMultiplyVec(matworld, tri.p[1]);
+            triTrans.p[2] = this.matrixMultiplyVec(matworld, tri.p[2]);
 
             //Calculate Normals
             let tt = triTrans.clone();
             let normal = new Vector3();
             let line1 = new Vector3();
             let line2 = new Vector3();
-            line1.x = tt.p[1].x - tt.p[0].x;
-            line1.y = tt.p[1].y - tt.p[0].y;
-            line1.z = tt.p[1].z - tt.p[0].z;
 
-            line2.x = tt.p[2].x - tt.p[0].x;
-            line2.y = tt.p[2].y - tt.p[0].y;
-            line2.z = tt.p[2].z - tt.p[0].z;
+            line1 = this.subVec(tt.p[1], tt.p[0]);
+            line2 = this.subVec(tt.p[2], tt.p[0]);
 
-            normal.x = line1.y * line2.z - line1.z * line2.y;
-            normal.y = line1.z * line2.x - line1.x * line2.z;
-            normal.z = line1.x * line2.y - line1.y * line2.x;
+            normal = this.crossProdVec(line1, line2);
 
-            let l = Math.sqrt(normal.x * normal.x + normal.y * normal.y + normal.z * normal.z);
-            normal.x /= l; normal.y /= l; normal.z /= l;
+            normal = this.normVec(normal);
+
+            let vCamRay = this.subVec(tt.p[0], this.camera.pos)
 
             //if(normal.z < 0) {
-            if(normal.x * (tt.p[0].x - this.camera.pos.x) + 
-               normal.y * (tt.p[0].y - this.camera.pos.y) + 
-               normal.z * (tt.p[0].z - this.camera.pos.z) < 0) {
+            if(this.dotProdVec(normal, vCamRay) < 0) {
                 //3D -> 2D
 
-                let lightdir = new Vector3(0, 0, -1);
-                let l = Math.sqrt(lightdir.x * lightdir.x + lightdir.y * lightdir.y + lightdir.z * lightdir.z);
-                lightdir.x /= l; lightdir.y /= l; lightdir.z /= l;
+                let lightdir = new Vector3(0, 1, -1);
+                lightdir = this.normVec(lightdir);
 
-                let dp = normal.x * lightdir.x + normal.y * lightdir.y + normal.z * lightdir.z;
+                let dp = Math.max(0.1, this.dotProdVec(lightdir, normal))
                 
                 let col = this.valtoascii(dp);
 
                 //let col = this.valtoascii(Math.sin(this.rotval));
 
                 let triProj = new Triangle();
-                triProj.p[0] = this.multiplyMatrixVector(triTrans.p[0], triProj.p[0], this.pMatrix) //Multiplies triangle by perspective matrix
-                triProj.p[1] = this.multiplyMatrixVector(triTrans.p[1], triProj.p[1], this.pMatrix)
-                triProj.p[2] = this.multiplyMatrixVector(triTrans.p[2], triProj.p[2], this.pMatrix)
+                triProj.p[0] = this.matrixMultiplyVec(this.pMatrix, triTrans.p[0]) //Multiplies triangle by perspective matrix
+                triProj.p[1] = this.matrixMultiplyVec(this.pMatrix, triTrans.p[1])
+                triProj.p[2] = this.matrixMultiplyVec(this.pMatrix, triTrans.p[2])
 
-                triProj.p[0].x += offx; triProj.p[0].y += offy; //More offsets
-                triProj.p[1].x += offx; triProj.p[1].y += offy; 
-                triProj.p[2].x += offx; triProj.p[2].y += offy; 
+                triProj.p[0] = this.divVec(triProj[0], triProj[0].w);
+                triProj.p[1] = this.divVec(triProj[1], triProj[1].w);
+                triProj.p[2] = this.divVec(triProj[2], triProj[2].w);
+
+                let offset = new Vector3(0, 0, 0)
+                triProj[0] = this.addVec(triProj.p[0], offset);
+                triProj[1] = this.addVec(triProj.p[1], offset);
+                triProj[2] = this.addVec(triProj.p[2], offset);
 
                 triProj.p[0].x *= scale * this.agl.width; triProj.p[0].y *= scale * this.agl.height; //Scales
                 triProj.p[1].x *= scale * this.agl.width; triProj.p[1].y *= scale * this.agl.height;
@@ -252,20 +220,146 @@ class AsciiGL3D {
         this.agl.primitives.line(x3, y3, x1, y1);
     }
 
-    multiplyMatrixVector(i, o, m) {
-        //Multiplies triangles by perspective matrix
-       o.x = i.x * m.m[0][0] + i.y * m.m[1][0] + i.z * m.m[2][0] + m.m[3][0]; 
-       o.y = i.x * m.m[0][1] + i.y * m.m[1][1] + i.z * m.m[2][1] + m.m[3][1];
-       o.z = i.x * m.m[0][2] + i.y * m.m[1][2] + i.z * m.m[2][2] + m.m[3][2];
-       let w = i.x * m.m[0][3] + i.y * m.m[1][3] + i.z * m.m[2][3] + m.m[3][3];
+    matrixMakeIdentity = function() {
+        let m = new Matrix4x4();
+        m.m[0][0] = 1;
+        m.m[1][1] = 1;
+        m.m[2][2] = 1;
+        m.m[3][3] = 1;
+        return m;
+    }
 
-       if(w != 0) {
-         o.x /= w;
-         o.y /= w;
-         o.z /= w;
-       }
+    matrixMakeZ = function(x) {
+        //Rotation Z Matrix
+        let m = new Matrix4x4();
+        m.m[0][0] = Math.cos(x);
+        m.m[0][1] = Math.sin(x);
+        m.m[1][0] = -Math.sin(x)
+        m.m[1][1] = Math.cos(x);
+        m.m[2][2] = 1;
+        m.m[3][3] = 1;
+        return m;
+    }
 
-       return o;
+    matrixMakeX = function(x) {
+        //Rotation X Matrix
+        let m = new Matrix4x4();
+        m.m[0][0] = 1;
+        m.m[1][1] = Math.cos(x);
+        m.m[1][2] = Math.sin(x);
+        m.m[2][1] = -Math.sin(x);
+        m.m[2][2] = Math.cos(x);
+        m.m[3][3] = 1;
+        return m;
+    }
+
+    matrixMakeY = function(x) {
+        //Rotation Y Matrix
+        let m = new Matrix4x4();
+        m.m[0][0] = Math.cos(x);
+        m.m[0][2] = Math.sin(x);
+        m.m[2][0] = -Math.sin(x);
+        m.m[1][1] = 1;
+        m.m[2][2] = Math.cos(x);
+        m.m[3][3] = 1;
+        return m;
+    }
+
+    matrixMakeTranlation(x, y, z) {
+        let m = new Matrix4x4();
+        m.m[0][0] = 1;
+        m.m[1][1] = 1;
+        m.m[2][2] = 1;
+        m.m[3][3] = 1;
+        m.m[3][0] = x;
+        m.m[3][1] = y;
+        m.m[3][2] = z;
+        return m;
+    }
+
+    matrixMakeProjection = function(fFov, fAspectRatio, fNear, fFar) {
+        let fFovRad = Math.tan(fFov * 0.5 / 100.0 * 3.14159); //FOV in Radians
+
+        //Perspective Matrix
+        let pMatrix = new Matrix4x4();
+        pMatrix.m[0][0] = fAspectRatio * fFovRad;
+        pMatrix.m[1][1] = fFovRad;
+        pMatrix.m[2][2] = fFar / (fFar - fNear);
+        pMatrix.m[3][2] = (-fFar * fNear) / (fFar - fNear);
+        pMatrix.m[3][3] = 0;
+        pMatrix.m[2][3] = 1;
+        return pMatrix;
+    }
+
+    matrixMultiplyVec = function(m, i) {
+        let v = new Vector3();
+        v.x = i.x * m.m[0][0] + i.y * m.m[1][0] + i.z * m.m[2][0] + i.w * [3][0];
+        v.y = i.x * m.m[0][1] + i.y * m.m[1][1] + i.z * m.m[2][1] + i.w * [3][1];
+        v.z = i.x * m.m[0][2] + i.y * m.m[1][2] + i.z * m.m[2][2] + i.w * [3][2];
+        v.x = i.x * m.m[0][3] + i.y * m.m[1][3] + i.z * m.m[2][3] + i.w * [3][3];
+        return v;
+    }
+
+    matrixMultiplyMatrix = function(m1, m2) {
+        let m = new Matrix4x4();
+        for(let c = 0; c < 4; c++) {
+            for(let r = 0; r < 4; r++) {
+                m.m[r][c] = m1.m[r][0] * m2.m[0][c] + m1.m[r][1] * m2.m[1][c] + m1.m[r][2] * m2.m[2][c] + m1.m[r][3] * m2.m[3][c]
+            }
+        }
+        return m;
+    }
+
+    addVec = function(v1, k) {
+        v1.x += k;
+        v1.y += k;
+        v1.z += k;
+        return v1;
+    }
+
+    subVec = function(v1, k) {
+        v1.x -= k
+        v1.y -= k;
+        v1.z -= k;
+        return v1;
+    }
+
+    mulVec = function(v1, k) {
+        v1.x *= k;
+        v1.y *= k;
+        v1.z *= k;
+        return v1;
+    }
+
+    divVec = function(v1, k) {
+        v1.x /= k;
+        v1.y /= k;
+        v1.z /= k;
+        return v1;
+    }
+
+    dotProdVec = function(v1, v2) {
+        return v1.x*v2.x + v1.y*v2.y + v1.z*v2.z;
+    }
+
+    crossProdVec = function(v1, v2) {
+        let v = new Vector3();
+        v.x = v1.y * v2.z - v1.z * v2.y;
+        v.y = v1.z * v2.x - v1.x * v2.z;
+        v.z = v1.x * v2.y - v1.y * v2.x;
+        return v;
+    }
+
+    lengthVec = function(v) {
+        return Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+    }
+
+    normVec = function(v) {
+        let l = this.lengthVec(v);
+        v.x /= l;
+        v.y /= l;
+        v.z /= l;
+        return v;
     }
 
     clear = function() {
@@ -287,15 +381,17 @@ class Vector3 {
     x = 0;
     y = 0;
     z = 0;
+    w = 1;
 
-    constructor(x=0, y=0, z=0) {
+    constructor(x=0, y=0, z=0, w=1) {
         this.x=x;
         this.y=y;
         this.z=z;
+        this.w=w;
     }
 
     clone = function() {
-        return new Vector3(this.x, this.y, this.z); //Neat function to clone this class to make clone instance
+        return new Vector3(this.x, this.y, this.z, this.w); //Neat function to clone this class to make clone instance
     }
 }
 

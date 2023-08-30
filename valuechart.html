@@ -1,0 +1,47 @@
+<html>
+    <head>
+        <title>AsciiGL Demo</title>
+        <script src="asciigl.js"></script>
+    </head>
+    <body>
+        <div id="render"></div>
+        <script>
+
+            const valtoascii = function(val) {
+                val = parseInt(12*val);
+                let col = 0;
+                switch(val) {
+                    case 11: col = 64; break;
+                    case 10: col = 77; break;
+                    case 9: col = 48; break;
+                    case 8: col = 35; break;
+                    case 7: col = 105; break;
+                    case 6: col = 43; break;
+                    case 5: col = 33; break;
+                    case 4: col = 39; break;
+                    case 3: col = 126; break;
+                    case 2: col = 45; break;
+                    case 1: col = 46; break;
+                    case 0: col = 96; break;
+                    default: col = 64; break;
+                }
+                return col;
+            }
+
+            let agl = new AsciiGLContext("render", 120, 85);
+            agl.setblack();
+            
+
+            agl.clear();
+
+            for(let i = 0; i < 12; i+=1) {
+                agl.primitives.stroke = valtoascii(i/12);
+                agl.primitives.fill = valtoascii(i/12);
+
+                agl.primitives.rect(i*5, 0, 5, 5);
+            }
+
+            agl.update();
+        </script>
+    </body>
+</html>
